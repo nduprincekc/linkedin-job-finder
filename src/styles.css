@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+* { margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body { background: #f8f9fd; transition: background .2s; }
+html[data-theme="dark"] body { background: #12151b; }
+html[data-theme="dark"] { color-scheme: dark; }
