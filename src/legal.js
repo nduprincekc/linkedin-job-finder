@@ -24,7 +24,7 @@ export const PRIVACY = {
   intro: `${C.company} ("we", "us") operates ${C.appName} (the "Service"). This policy explains what personal data we collect, why, who we share it with, and the rights you have under the Nigeria Data Protection Act 2023 (NDPA) and, where it applies, the EU/UK GDPR. Effective ${C.effectiveDate} (v${C.version}).`,
   sections: [
     ["What we collect", [
-      "Account data: your name, email address and a hashed password (we never see the password itself).",
+      "Account data: your name, email address, phone number and a hashed password (we never see the password itself). Your phone number is used to send job alerts by WhatsApp if you opt in, and to reach you about your account. We never call you, sell it, or share it with employers or advertisers.",
       "Usage data: the searches you run (keywords, location, country and filters), jobs you save, notes and application status you add, CSV exports you make, and alerts you create (including the email address or Telegram chat ID you choose for delivery).",
       "Technical data: IP address, browser type and timestamps, kept in our server and authentication logs for security and abuse prevention.",
       "Preferences stored in your browser (localStorage): rows-per-page, cached search results, and — if you use the Service without an account — your saved jobs and history. These never leave your device.",
@@ -40,7 +40,7 @@ export const PRIVACY = {
       "Supabase (database, authentication and email delivery of auth messages) — hosted in the region shown in your account settings.",
       "n8n on our own servers (Amazon Web Services) — runs your searches and sends alerts.",
       "Apify — receives only your search parameters (keywords, location, country, filters), never your identity, to fetch public job listings.",
-      "Email and messaging providers (Gmail/Resend for email, Telegram for Telegram alerts) — receive only the address/chat ID you gave us and the alert content.",
+      "Email and messaging providers (our email provider, and Twilio/WhatsApp or Telegram if you choose those channels) — receive only the address, phone number or chat ID you gave us, and the alert content.",
       "Law enforcement or regulators, only where legally required.",
       "We do not sell personal data and we do not share it with advertisers."
     ]],
@@ -59,7 +59,7 @@ export const PRIVACY = {
     ["Your rights", [
       "Access, correct or export your data — from Settings, or by emailing us.",
       "Delete your account and all associated data yourself from Settings → Account → Delete my account. Deletion is immediate and permanent.",
-      "Withdraw consent for emails at any time using the unsubscribe link or by pausing/deleting alerts.",
+      "Withdraw consent for emails or WhatsApp messages at any time using the unsubscribe link, by turning off WhatsApp alerts in Settings, or by pausing/deleting alerts.",
       "Object to, or ask us to restrict, processing based on legitimate interest.",
       "Complain to the Nigeria Data Protection Commission (ndpc.gov.ng) or your local supervisory authority if you believe we have mishandled your data."
     ]],

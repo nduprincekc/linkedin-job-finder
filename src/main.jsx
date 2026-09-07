@@ -934,6 +934,16 @@ function App() {
     </div>
     <div className="auth-fields">
       {authMode === "signup" && <label>Full name<input value={authForm.name} onChange={e => setAuthForm(a => ({ ...a, name: e.target.value }))} autoComplete="name" autoFocus /></label>}
+      {authMode === "signup" && <label>Phone number
+        <input type="tel" value={authForm.phone} placeholder="0812 002 6492" autoComplete="tel"
+          onChange={e => setAuthForm(a => ({ ...a, phone: e.target.value }))} />
+        {authForm.phone && !validPhone(authForm.phone) && <small className="field-hint warn">That doesn't look like a valid number yet.</small>}
+        {validPhone(authForm.phone) && <small className="field-hint ok"><Check size={11} /> {normalizePhone(authForm.phone)}</small>}
+      </label>}
+      {authMode === "signup" && <label className="consent tight">
+        <input type="checkbox" checked={authForm.whatsapp} onChange={e => setAuthForm(a => ({ ...a, whatsapp: e.target.checked }))} />
+        <span>Send my job alerts to WhatsApp too. We'll never call you or share your number.</span>
+      </label>}
       {authMode !== "reset" && <label>Email<input type="email" value={authForm.email} onChange={e => setAuthForm(a => ({ ...a, email: e.target.value }))} autoComplete="email" autoFocus={authMode !== "signup"} onKeyDown={e => e.key === "Enter" && authMode === "forgot" && submitAuth()} /></label>}
       {authMode !== "forgot" && <label>{authMode === "reset" ? "New password" : "Password"}<input type="password" value={authForm.password} onChange={e => setAuthForm(a => ({ ...a, password: e.target.value }))} autoComplete={authMode === "signin" ? "current-password" : "new-password"} onKeyDown={e => e.key === "Enter" && authMode === "signin" && submitAuth()} autoFocus={authMode === "reset"} /></label>}
       {(authMode === "signup" || authMode === "reset") && <label>Confirm password<input type="password" value={authForm.confirm} onChange={e => setAuthForm(a => ({ ...a, confirm: e.target.value }))} autoComplete="new-password" onKeyDown={e => e.key === "Enter" && submitAuth()} /></label>}
