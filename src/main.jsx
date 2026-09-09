@@ -66,6 +66,22 @@ const encodeShare = (p) => { const u = new URLSearchParams(); Object.entries(SHA
 const decodeShare = () => { const u = new URLSearchParams(window.location.search); if (!u.get("q")) return null; const p = {}; Object.entries(SHARE_KEYS).forEach(([k, sk]) => { const v = u.get(sk); if (v != null) p[k] = k === "underTenApplicants" ? v === "true" : v; }); return p; };
 const APIFY_COST_PER_JOB = 0.005;
 // wa.me opens WhatsApp on phone or desktop with the message already typed.
+// Nigerian numbers arrive as 0803..., +234803..., or 234803... — store one canonical E.164 form.
+function normalizePhone(raw, defaultCode = "234") {
+  let d = String(raw || "").replace(/[^\d+]/g, "");
+  if (d.startsWith("+")) return d;
+  d = d.replace(/\D/g, "");
+  if (!d) return "";
+  if (d.startsWith("0")) return `+${defaultCode}${d.slice(1)}`;
+  if (d.startsWith(defaultCode)) return `+${d}`;
+  if (d.length <= 11) return `+${defaultCode}${d}`;
+  return `+${d}`;
+}
+function validPhone(raw) {
+  const p = normalizePhone(raw);
+  return /^\+\d{10,15}$/.test(p);
+}
+
 const waLink = (msg) => `https://wa.me/${LEGAL_CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`; // USD estimate for the admin dashboard; adjust to your actor's price
 const ENV_WEBHOOK = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_N8N_WEBHOOK_URL) || "";
 
@@ -249,7 +265,7 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState("signin"); // signin | signup | forgot | reset
-  const [authForm, setAuthForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [authForm, setAuthForm] = useState({ name: "", email: "", phone: "", whatsapp: true, password: "", confirm: "" });
   const [authStatus, setAuthStatus] = useState({ type: "", text: "" });
   const [authBusy, setAuthBusy] = useState(false);
   const [profileDraft, setProfileDraft] = useState("");
@@ -436,13 +452,14 @@ function App() {
     if ((authMode === "signup" || authMode === "reset") && f.password.length < 8) return fail("Password must be at least 8 characters.");
     if ((authMode === "signup" || authMode === "reset") && f.password !== f.confirm) return fail("Passwords don't match.");
     if (authMode === "signup" && f.name.length < 2) return fail("Enter your full name.");
+    if (authMode === "signup" && !validPhone(f.phone)) return fail("Enter a valid phone number, e.g. 0812 002 6492.");
     if (authMode === "signup" && !agreed) return fail("Please accept the Terms of Service and Privacy Policy.");
     if (authMode === "signin" && !f.password) return fail("Enter your password.");
     setAuthBusy(true); setAuthStatus({ type: "", text: "" });
     try {
       if (authMode === "signup") {
         if (TURNSTILE_KEY && !captchaToken) return fail("Please complete the captcha.");
-        const { data, error: e } = await auth.signUp(f.email, f.password, f.name, captchaToken);
+        const { data, error: e } = await auth.signUp(f.email, f.password, f.name, captchaToken, normalizePhone(f.phone), f.whatsapp);
         if (e) throw e;
         if (data.session) { setAuthOpen(false); setNotice(`Welcome, ${f.name}! Your account is ready.`); }
         else setAuthStatus({ type: "ok", text: `Account created. We sent a confirmation link to ${f.email} — click it to finish signing up.` });
@@ -1533,6 +1550,7 @@ function App() {
                 <div className="settings-row"><strong>Signed in as</strong><span className="ok">{user.email}</span></div>
                 <div className="settings-row"><strong>Member since</strong><span>{new Date(profile?.created_at || user.created_at).toLocaleDateString()}</span></div>
                 <div className="settings-row"><strong>Synced</strong><span>{saved.length} saved jobs · {history.length} searches · {alerts.length} alerts</span></div>
+                <div className="settings-row"><strong>Phone</strong><span>{profile?.phone || "Not set"}{profile?.whatsapp_optin ? " · WhatsApp alerts on" : ""}</span></div>
                 <div className="settings-form" style={{ marginTop: 10 }}><input value={profileDraft} placeholder="Full name" onChange={e => setProfileDraft(e.target.value)} style={{ flex: "1 1 220px" }} /><button className="secondary-btn" onClick={saveProfile} disabled={profileDraft.trim() === (profile?.full_name || "")}><User size={15} /> Update name</button></div>
                 <div className="settings-form"><input type="password" value={pwDraft.password} placeholder="New password" onChange={e => setPwDraft(d => ({ ...d, password: e.target.value }))} style={{ flex: "1 1 160px" }} /><input type="password" value={pwDraft.confirm} placeholder="Confirm" onChange={e => setPwDraft(d => ({ ...d, confirm: e.target.value }))} style={{ flex: "1 1 160px" }} /><button className="secondary-btn" onClick={changePassword} disabled={!pwDraft.password}><KeyRound size={15} /> Change password</button></div>
                 <div className="row-actions" style={{ marginTop: 6, flexWrap: "wrap" }}>
@@ -2265,6 +2283,10 @@ tr.row-active { background: var(--accent-soft); }
 .gate-legal { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px; margin-top: 10px; }
 .gate-legal .link-btn, .sidebar-legal .link-btn, .consent .link-btn { padding: 0; font-size: inherit; color: var(--accent); background: none; border: none; }
 .sidebar-legal { font-size: 11.5px; color: var(--text-dim); padding: 0 4px; }
+.field-hint { display: flex; align-items: center; gap: 4px; font-size: 11.5px; margin-top: 2px; }
+.field-hint.warn { color: #b45309; }
+.field-hint.ok { color: #15803d; }
+.consent.tight { margin-top: -2px; font-size: 12px; }
 .consent { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
 .consent input { margin-top: 3px; }
 
